@@ -1,0 +1,13 @@
+/** 
+2.2 Header-Dateien (40%)
+Implementieren Sie ein Programm, welches eine der Grundrechenoperationen (+, -, *, /) und zwei natürliche Zahlen als Kommandozeilenparameter übergeben bekommt. Die beiden Zahlen sollen vom Programm dann entsprechend der angegebenen Operation verarbeitet werden und anschließend soll das Ergebnis ausgegeben werden. Beispielsweise soll ./calculator 3 - 4 als Ausgabe -1 liefern.
+
+Bei dieser Aufgabe wollen wir den Umgang mit mehreren Quellcode-Dateien und Header-Dateien trainieren. Aus diesem Grund implementieren wir die Grundrechenoperationen in einer eigenen Quellcode-Datei namens operations.c. Damit wir die Grundrechenoperationen in einer anderen Quellcode-Datei verwenden können, brauchen wir zusätzlich noch eine Header-Datei namens operations.h, die die Deklarationen der Grundrechenoperationen beinhaltet. Die main-Funktion unseres Programms, welche die Grundrechenoperationen verwenden soll, implementieren wir in einer separaten Quellcode-Datei namens calculator.c.
+
+Des weiteren wollen wir auch das Erstellen eines Programmes trainieren, das aus mehreren Quellcode-Dateien besteht. Aus diesem Grund werden wir beim Bauen des Programms den Kompilier- und den Linker-Schritt getrennt voneinander durchführen. Erstellen Sie zuerst aus jeder Quellcode-Datei eine Objekt-Datei indem Sie für jede Quellcode-Datei den Befehl gcc -Werror -Wall -c -o <code-file>.o <code-file>.c ausführen. Das Kommandozeilenargument (man redet hier auch von Compiler Optionen) -c weist den Compiler hierbei an, dass er nach dem Kompilierschritt stoppen und nicht den Linker-Schritt ausführen soll. Nachdem wir aus jeder Quellcode-Datei eine Objekt-Datei erzeugt haben, können wir den Linker anweisen, aus den einzelnen Objekt-Dateien eine ausführbare Datei zu erzeugen. Führen Sie hierzu den Befehl gcc -o <executable_name> <object_file1>.o <object_file2>.o ... aus. Schreiben Sie diese Befehle auch alle in die entsprechende Zelle unten.
+
+Überprüfen Sie auch, ob der Benutzer tatsächlich genügend Kommandozeilenparameter übergeben hat. Wenn nicht, dann geben Sie eine aussagekräftige Fehlermeldung aus und beenden das Programm mit einem Exit Code ungleich 0.
+
+Anmerkung: Leider kann das Operationssymbol * nicht direkt als Kommandozeilenparameter verwendet werden, da das Zeichen * eine Sonderbedeutung hat (nämlich als sog. Wildcard). Sie müssen daher dieses Zeichen mit Anführungszeichen umgeben, also "*", um dem Computer mitzuteilen, dass Sie für das Zeichen * keine Sonderbedeutung wollen.
+
+*/
