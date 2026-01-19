@@ -21,4 +21,54 @@ Die gefundenen Zahlen aus jeder Eingabezeile sollen also durch ein Leerzeichen g
 Implementieren Sie Ihr Programm in der Datei integers.c.
  */
 
- 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_LINE 1024
+
+int main() {
+    FILE *output = fopen("integers_output.txt", "w");
+    if (!output) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    char line[MAX_LINE];
+    printf("> Geben Sie Ihren Text ein:\n");
+
+    while (fgets(line, MAX_LINE, stdin)) {
+        size_t len = strlen(line);
+        if (len > 0 && line[len-1] == '\n') {
+            line[len-1] = '\0';
+            len--;
+        }
+
+        if (len == 0) {
+            break;
+        }
+
+        int found_digit = 0;
+        int in_number = 0;
+
+        for (size_t i = 0; i < len; i++) {
+            if (isdigit(line[i])) {
+                if (found_digit && !in_number) {
+                    fputc(' ', output);
+                }
+                fputc(line[i], output);
+                in_number = 1;
+                found_digit = 1;
+            } else {
+                in_number = 0;
+            }
+        }
+
+        fputc('\n', output);
+    }
+
+    printf("> Ende der Eingabe erreicht.\n");
+    fclose(output);
+    return 0;
+}

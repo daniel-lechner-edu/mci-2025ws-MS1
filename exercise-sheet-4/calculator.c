@@ -36,4 +36,91 @@ Kommt es zu einer Eingabe, welche nicht den Erwartungen enspricht (kein Integer 
 Sie können gerne Ihre Quellcode- bzw. Header-Dateien aus Übung 2.2 wiederverwenden.
 Implementieren Sie Ihr Programm in der Datei calculator.c. Wenn Sie Quellcode-Dateien aus früheren Übungen direkt weiterverwenden, ist es wichtig, dass Sie in die untere Zelle einen korrekten Befehl zum kompilieren eingeben, da sonst die automatischen Tests nicht funktionieren.
  */
- 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_INPUT 100
+
+int main() {
+    char input[MAX_INPUT];
+
+    while (1) {
+        printf("> Geben Sie Zahl 1 ein:\n");
+        if (!fgets(input, MAX_INPUT, stdin)) {
+            break;
+        }
+
+        input[strcspn(input, "\n")] = '\0';
+
+        if (strcmp(input, "exit") == 0) {
+            printf("> Rechner wird geschlossen\n");
+            break;
+        }
+
+        char *endptr;
+        int num1 = strtol(input, &endptr, 10);
+        if (*endptr != '\0') {
+            fprintf(stderr, "> Falsche Eingabe!\n");
+            continue;
+        }
+
+        printf("> Geben Sie die Operation ein:\n");
+        if (!fgets(input, MAX_INPUT, stdin)) {
+            break;
+        }
+
+        input[strcspn(input, "\n")] = '\0';
+
+        if (strcmp(input, "exit") == 0) {
+            printf("> Rechner wird geschlossen\n");
+            break;
+        }
+
+        if (strlen(input) != 1 || (input[0] != '+' && input[0] != '-' && input[0] != '*' && input[0] != '/')) {
+            fprintf(stderr, "> Falsche Eingabe!\n");
+            continue;
+        }
+
+        char op = input[0];
+
+        printf("> Geben Sie Zahl 2 ein:\n");
+        if (!fgets(input, MAX_INPUT, stdin)) {
+            break;
+        }
+
+        input[strcspn(input, "\n")] = '\0';
+
+        if (strcmp(input, "exit") == 0) {
+            printf("> Rechner wird geschlossen\n");
+            break;
+        }
+
+        int num2 = strtol(input, &endptr, 10);
+        if (*endptr != '\0') {
+            fprintf(stderr, "> Falsche Eingabe!\n");
+            continue;
+        }
+
+        if (op == '+') {
+            printf("> Ergebnis: %d\n", num1 + num2);
+        } else if (op == '-') {
+            printf("> Ergebnis: %d\n", num1 - num2);
+        } else if (op == '*') {
+            printf("> Ergebnis: %d\n", num1 * num2);
+        } else if (op == '/') {
+            if (num2 == 0) {
+                fprintf(stderr, "> Falsche Eingabe!\n");
+                continue;
+            }
+            if (num1 % num2 == 0) {
+                printf("> Ergebnis: %d\n", num1 / num2);
+            } else {
+                printf("> Ergebnis: %.1f\n", (double)num1 / num2);
+            }
+        }
+    }
+
+    return 0;
+}
