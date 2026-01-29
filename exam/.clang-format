@@ -1,0 +1,7 @@
+BasedOnStyle: LLVM
+BreakBeforeBraces: Attach
+IndentWidth: 2
+BinPackParameters: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AlignAfterOpenBracket: BlockIndent
+AllowAllArgumentsOnNextLine: false
