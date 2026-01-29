@@ -1,27 +1,145 @@
-/**
-6.3 Schneefall (34%)
-Implementieren Sie ein Programm, welches Schneefall-Daten für verschiedene Tiroler Ortschaften aus Dateien einliest, verarbeitet und in bestimmter Form wieder in eine Datei ausgibt. Sie finden im Ordner dieses Übungsblattes den Unterordner snow_data. In diesem Ordner gibt es genau 8 Textdokumente, wobei jedes dieser Dokumente Schneefall-Daten für 8 verschiedene Tiroler Ortschaften im Format Ortsname;Schneefall-Menge (in cm) enthält. In Datei 1.txt befinden sich die Datensätze für Tag 1, in Datei 2.txt jene von Tag 2, und so weiter. Der Benutzer soll einen bestimmten Ort und einen bestimmten Tag angeben können. Als Ausgabe sollen dann die jeweiligen Schneefall-Mengen von diesem Ort an allen vorherigen Tagen (inklusive des angegebenen Tages), sowie die Summe dieser Schneefall-Mengen, in ein Textdokument geschrieben werden. Hier ein beispielhafter Programmablauf:
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
-> Geben Sie einen Ort an:
-Ischgl
-> Geben Sie einen Tag an:
-3
-> Die Ergebnisse Ihrer Anfrage wurden erfolgreich in eine Datei geschrieben.
+#define MAX_LINE 256
+#define MAX_LOCATION_LEN 50
 
-So sollte der Inhalt der Ausgabedatei für obige Eingaben aussehen:
-Tag 1: 5
-Tag 2: 23
-Tag 3: 3
-Summe: 31
+int is_valid_day(const char *input) {
+    if (!input || strlen(input) == 0) return 0;
 
-Es gilt zu beachten:
+    for (int i = 0; input[i]; i++) {
+        if (!isdigit(input[i])) return 0;
+    }
 
-Wird eine Ortschaft angegeben zu welcher keine Datensätze existieren, dann soll keine Ausgabedatei erzeugt werden. Zudem soll eine Fehlermeldung auf stderr ausgegeben, und das Programm mit einem Exit-Code ungleich 0 beendet, werden. Wichtig: Die Fehlermeldung muss das Wort "Eingabefehler" enthalten.
-Als korrekte Eingabe für den Tag sollen nur Integer-Werte zwischen 1 und 8 akzepiert werden (Eingaben wie 3xyz oder 4.0 werden nicht akzeptiert). Bei jeglichen anderen Eingaben soll eine Fehlermeldung auf stderr ausgegeben, und das Programm mit einem Exit-Code ungleich 0 beendet, werden. Wichtig: Die Fehlermeldung muss das Wort "Eingabefehler" enthalten.
-Die Ausgabedatei soll ebenfalls im Ordner snow_data angelegt werden. Sie soll im Format Ortsname_Tag.txt benannt werden. Für obiges Beispiel wäre dies Ischgl_3.txt.
-Wenn eine Eingabedatei nicht zum Lesen geöffnet werden kann, dann soll eine Fehlermeldung auf stderr ausgegeben, und das Programm mit einem Exit-Code ungleich 0 beendet, werden. Wichtig: Die Fehlermeldung muss das Wort "Lesefehler" enthalten.
-Wenn die Ausgabedatei nicht zum Schreiben geöffnet werden kann, dann soll eine Fehlermeldung auf stderr ausgegeben, und das Programm mit einem Exit-Code ungleich 0 beendet, werden. Wichtig: Die Fehlermeldung muss das Wort "Schreibfehler" enthalten.
-Der Inhalt der Ausgabedatei soll wie im obigen Beispiel formatiert werden. Wichtig dabei ist, dass jeder Eintrag in eine neue Zeile geschrieben wird und jede Zeile (außer jener mit der Summe) sowohl die Nummer des Tages als auch die entsprechende Schneefall-Menge enthält.
-Falls Sie während Ihrer Implementierung eine Zeichenkette mit einem Integer konkatenieren möchten, dann können Sie dazu beispielsweise die Funktion sprintf aus der Header-Datei stdio.h verwenden.
-Sobald das Lesen von bzw. das Schreiben in eine Datei abgeschlossen ist, muss diese durch den entsprechenden Befehl wieder geschlossen werden.
- */
+    int day = atoi(input);
+    return day >= 1 && day <= 8;
+}
+
+int location_exists(const char *location) {
+    FILE *fp = fopen("snow_data/1.txt", "r");
+    if (!fp) {
+        fprintf(stderr, "Lesefehler\n");
+        exit(1);
+    }
+
+    char line[MAX_LINE];
+    int found = 0;
+
+    while (fgets(line, MAX_LINE, fp)) {
+        char loc[MAX_LOCATION_LEN];
+        int snowfall;
+
+        if (sscanf(line, "%[^;];%d", loc, &snowfall) == 2) {
+            if (strcmp(loc, location) == 0) {
+                found = 1;
+                break;
+            }
+        }
+    }
+
+    fclose(fp);
+    return found;
+}
+
+int get_snowfall(const char *location, int day) {
+    char filename[50];
+    sprintf(filename, "snow_data/%d.txt", day);
+
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        fprintf(stderr, "Lesefehler\n");
+        exit(1);
+    }
+
+    char line[MAX_LINE];
+    int snowfall = 0;
+    int found = 0;
+
+    while (fgets(line, MAX_LINE, fp)) {
+        char loc[MAX_LOCATION_LEN];
+        int snow;
+
+        if (sscanf(line, "%[^;];%d", loc, &snow) == 2) {
+            if (strcmp(loc, location) == 0) {
+                snowfall = snow;
+                found = 1;
+                break;
+            }
+        }
+    }
+
+    fclose(fp);
+
+    if (!found) {
+        fprintf(stderr, "Eingabefehler\n");
+        exit(1);
+    }
+
+    return snowfall;
+}
+
+void write_output(const char *location, int day, int snowfalls[]) {
+    char filename[100];
+    sprintf(filename, "snow_data/%s_%d.txt", location, day);
+
+    FILE *fp = fopen(filename, "w");
+    if (!fp) {
+        fprintf(stderr, "Schreibfehler\n");
+        exit(1);
+    }
+
+    int sum = 0;
+    for (int i = 1; i <= day; i++) {
+        fprintf(fp, "Tag %d: %d\n", i, snowfalls[i-1]);
+        sum += snowfalls[i-1];
+    }
+    fprintf(fp, "Summe: %d\n", sum);
+
+    fclose(fp);
+}
+
+int main() {
+    char location[MAX_LOCATION_LEN];
+    char day_input[MAX_LINE];
+
+    printf("> Geben Sie einen Ort an:\n");
+    if (!fgets(location, MAX_LOCATION_LEN, stdin)) {
+        fprintf(stderr, "Eingabefehler\n");
+        return 1;
+    }
+
+    location[strcspn(location, "\n")] = '\0';
+
+    if (!location_exists(location)) {
+        fprintf(stderr, "Eingabefehler\n");
+        return 1;
+    }
+
+    printf("> Geben Sie einen Tag an:\n");
+    if (!fgets(day_input, MAX_LINE, stdin)) {
+        fprintf(stderr, "Eingabefehler\n");
+        return 1;
+    }
+
+    day_input[strcspn(day_input, "\n")] = '\0';
+
+    if (!is_valid_day(day_input)) {
+        fprintf(stderr, "Eingabefehler\n");
+        return 1;
+    }
+
+    int day = atoi(day_input);
+
+    int snowfalls[8];
+    for (int i = 1; i <= day; i++) {
+        snowfalls[i-1] = get_snowfall(location, i);
+    }
+
+    write_output(location, day, snowfalls);
+
+    printf("> Die Ergebnisse Ihrer Anfrage wurden erfolgreich in eine Datei geschrieben.\n");
+
+    return 0;
+}

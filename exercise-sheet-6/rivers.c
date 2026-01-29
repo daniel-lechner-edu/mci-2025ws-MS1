@@ -1,48 +1,90 @@
-/**
-6.5 Klausur aus den Vorjahren: Berggipfel und Höhen
-Allgemeine Hinweise
-Es sind alle Unterlagen (Foliensätze, Skripten) erlaubt, Sie dürfen auch Teile Ihrer eigenen Lösungen der Übungsblätter wiederverwenden.
-Kommunikation mit anderen Studenten und/oder KIs (ChatGPT & Co.) ist in jeglicher Form verboten und führt zu einer negativen Beurteilung.
-Lesen Sie die Aufgabe genau und vollständig durch, bevor Sie mit der Bearbeitung beginnen.
-Zur Benotung wird die Funktionalität ihrer Lösung auf JupyterHub herangezogen.
-Kommentieren Sie Ihren Code ausführlich (jede Funktion und auch jeden wichtigen Codeteil)
-Kommentieren Sie am Anfang Ihrer Quelldatei, was an Ihrem abgegebenen Programm einwandfrei funktioniert, und was nicht funktioniert (und warum).
-Wann immer von „zufälligen“ Werten gesprochen wird, grenzen Sie den möglichen Wertebereich sinnvoll ein.
-Wenn keine konkreten Werte angegeben werden, dann wählen Sie selber einen sinnvollen Wert aus.
-Aufgabe
-Implementieren Sie ein Programm, welches für eine Liste von Kontinenten angibt, welcher Berggipfel die größte Höhe auf einem gegebenen Kontinent hat. Zusätzlich soll auch die Differenz zum kleinsten Gipfel auf denselben Kontinent ausgegeben werden. Verwenden Sie dazu die Datei peaks.csv, die Sie im Ordner dieser Klausur finden. Darin enthalten ist eine Liste von 55 Berggipfeln inklusive deren Höhe in Metern, das Land, in dem sich der Gipfel befindet, und der Kontinent, auf dem sich das Land befindet. So gibt zum Beispiel der Datensatz Mount Everest:8848:Nepal:Asia den Namen des Gipfels (Mount Everest), die Höhe (8848 Meter), das Land (Nepal) und den Kontinent (Asia) an.
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-Benutzer:innen sollen als Kommandozeilenparameter eine Liste von Kontinenten angeben können. Es soll dann für jeden angegebenen Kontinent der höchste Berggipfel inklusive seiner Höhe, dem Land und die Höhendifferenz zum kleinsten Gipfel auf denselben Kontinent in umgekehrter Reihenfolg ausgegeben werden.
+#define MAX_PEAKS 60
+#define MAX_LINE 256
+#define MAX_NAME_LEN 50
+#define MAX_COUNTRY_LEN 50
+#define MAX_CONTINENT_LEN 50
 
-Hier ein beispielhafter Programmaufruf inklusive Ausgabe:
+typedef struct {
+    char name[MAX_NAME_LEN];
+    int height;
+    char country[MAX_COUNTRY_LEN];
+    char continent[MAX_CONTINENT_LEN];
+} Peak;
 
-Aufruf:
-./peaks Asia Africa.
-Ausgabe:
-Africa: Kibo (Tanzania) with 5895 m, Difference: 1345 m
-Asia: Mount Everest (Nepal) with 8848 m, Difference: 3711 m
+int read_peaks(Peak peaks[], const char *filename) {
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        fprintf(stderr, "Lesefehler\n");
+        return -1;
+    }
 
-Es gilt zu beachten:
-Die Liste der Berggipfel in der Datei peaks.csv wurde von ChatGPT erstellt, daher alle Angaben ohne Gewähr.
-Sollte die Datei peaks.csv plötzlich mehr oder weniger als 55 Datensätze beinhalten, dann darf Ihr Programm nicht abstürzen. Überzählige Zeilen können aber ignoriert werden.
-Ihr Programm sollte auch bei ungültigen Zeilen (z.B. bei fehlenden Daten) nicht abstürzen. Ungültige Zeilen können auch ignoriert werden.
-Wenn die Datei peaks.csv nicht zum Lesen geöffnet werden kann, dann soll eine Fehlermeldung auf stderr ausgegeben, und das Programm mit einem Exit-Code ungleich 0 beendet werden. Wichtig: Die Fehlermeldung muss das Wort "Lesefehler" enthalten.
-Wird kein Kommandozeilenparameter angegeben, dann soll eine Fehlermeldung auf stderr ausgegeben, und das Programm mit einem Exit-Code ungleich 0 beendet werden. Wichtig: Die Fehlermeldung muss das Wort "Eingabefehler" enthalten.
-Wird ein Kontinent, welches im Datensatz nicht existiert, als Kommandozeilenparameter angegeben, soll dies dem Nutzer durch die Nachricht Continent '<Eingabe aus Eingabeparameter>' not found mitgeteilt werden (wie im folgenden Beispiel):
-Aufruf:
-./rivers Asia Arctica Africa.
-Ausgabe:
-Africa: Kibo (Tanzania) with 5895 m, Difference: 1345 m
-Continent Arctica not found
-Asia: Mount Everest (Nepal) with 8848 m, Difference: 3711 m
+    char line[MAX_LINE];
+    int count = 0;
 
-Wenn ein Kommandozeilenargument ein Leerzeichen enthält, dann müssen Sie dieses Argument in der Konsole mit " umgeben (z.B. "South America"). Ansonsten wird es als mehrere Argumente gewertet.
-Hilfestellung für eine mögliche Herangehensweise:
-Hinweis: Sie müssen sich NICHT an diesen Ablauf halten - wichtig ist nur, dass Ihr Programm den oberhalb präsentierten Angaben gerecht wird. Sehen Sie den folgenden Abschnitt lediglich als Hilfestellung an, um die Aufgabe in kleinere Einheiten zerlegen zu können.
-(1) Erstellen Sie zunächst die main()-Funktion, lesen sie die Kommandozeilenparameter ein und überprüfen Sie diese auf ihre Richtigkeit.
+    while (fgets(line, MAX_LINE, fp) && count < MAX_PEAKS) {
+        Peak peak;
 
-(2) Erstellen Sie eine Struktur mit passenden Feldern, um die Daten der Berggipfel speichern zu können.
-(3) Implementieren Sie eine Funktion, welche die Daten der Berggipfel aus der Datei liest und in der zuvor erstellten Struktur speichert. Erzeugen Sie hierfür ein Array ausreichender Größe für 55 Datensätzen. Sie müssen die Array-Größe nicht dynamisch anpassen.
-(4) Implementieren Sie eine Funktion, welche für einen gegebenen Kontinent den höchsten und den niedrigsten Berggipfel zurückgibt.
-(5) Führen Sie die in den Schritten 1-4 erstellten Bestandteile zu einem funktionsfähigen Programm zusammen.
- */
+        if (sscanf(line, "%[^:]:%d:%[^:]:%[^\n]", peak.name, &peak.height, peak.country, peak.continent) == 4) {
+            peaks[count++] = peak;
+        }
+    }
+
+    fclose(fp);
+    return count;
+}
+
+void find_highest_and_difference(const Peak peaks[], int count, const char *continent) {
+    int max_height = -1;
+    int min_height = 999999;
+    int max_idx = -1;
+    int found = 0;
+
+    for (int i = 0; i < count; i++) {
+        if (strcmp(peaks[i].continent, continent) == 0) {
+            found = 1;
+            if (peaks[i].height > max_height) {
+                max_height = peaks[i].height;
+                max_idx = i;
+            }
+            if (peaks[i].height < min_height) {
+                min_height = peaks[i].height;
+            }
+        }
+    }
+
+    if (!found) {
+        printf("Continent %s not found\n", continent);
+    } else {
+        int difference = max_height - min_height;
+        printf("%s: %s (%s) with %d m, Difference: %d m\n",
+               peaks[max_idx].continent,
+               peaks[max_idx].name,
+               peaks[max_idx].country,
+               peaks[max_idx].height,
+               difference);
+    }
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "Eingabefehler\n");
+        return 1;
+    }
+
+    Peak peaks[MAX_PEAKS];
+    int count = read_peaks(peaks, "peaks.csv");
+
+    if (count == -1) {
+        return 1;
+    }
+
+    for (int i = argc - 1; i >= 1; i--) {
+        find_highest_and_difference(peaks, count, argv[i]);
+    }
+
+    return 0;
+}

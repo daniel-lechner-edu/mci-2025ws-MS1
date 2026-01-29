@@ -1,44 +1,138 @@
-/**
-6.2 Klausur vom letzten Jahr: Apartmentsuche in Städten (33%)
-Allgemeine Hinweise
-Es sind alle Unterlagen (Foliensätze, Skripten) erlaubt, Sie dürfen auch Teile Ihrer eigenen Lösungen der Übungsblätter wiederverwenden.
-Kommunikation mit anderen Studenten und/oder KIs (ChatGPT & Co.) ist in jeglicher Form verboten und führt zu einer negativen Beurteilung.
-Lesen Sie die Aufgabe genau und vollständig durch, bevor Sie mit der Bearbeitung beginnen.
-Zur Benotung wird die Funktionalität ihrer Lösung auf JupyterHub herangezogen.
-Kommentieren Sie Ihren Code ausführlich (jede Funktion und auch jeden wichtigen Codeteil)
-Kommentieren Sie am Anfang Ihrer Quelldatei, was an Ihrem abgegebenen Programm einwandfrei funktioniert, und was nicht funktioniert (und warum).
-Wann immer von „zufälligen“ Werten gesprochen wird, grenzen Sie den möglichen Wertebereich sinnvoll ein.
-Wenn keine konkreten Werte angegeben werden, dann wählen Sie selber einen sinnvollen Wert aus.
-Aufgabe
-Implementieren Sie ein Programm, welches für eine Liste von Wohnungen ausgibt, welche Wohnungen eine gegebene Mindestfläche und Mindestanzahl an Zimmer haben und in einer gegebenen Stadt verfügbar sind. Die Liste der Wohnungen finden Sie in der Datei apartments.csv im Ordner dieser Klausur. Darin enthalten ist eine Liste von 51 Wohnungen inklusive deren Stadt, der Adresse, der Fläche in Quadratmetern, der Anzahl der Zimmer und einer Liste von verfügbaren Extras. So gibt zum Beispiel der Datensatz Innsbruck;Pradl 5;88.5;3;Balkon:Garage die Stadt (Innsbruck), die Adresse (Pradl 5), die Fläche (88.5 Quadratmeter), die Anzahl der Zimmer (3) und die verfügbaren Extras (Balkon und Garage) an.
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-Benutzer:innen sollen als Kommandozeilenparameter die gewünschte Stadt, die gewünschte Mindestfläche, die gewünschte Mindestanzahl an Zimmern und eine optionale Liste von gewünschten Extras angeben können. Es soll dann eine Liste von Wohnungen ausgegeben werden, die in der angegebenen Stadt verfügbar sind, die gewünschte Mindestgröße und Mindestanzahl an Zimmern erfüllen und alle angebenen Extras haben. Diese Liste soll neben der Adresse auch die genaue Fläche der Wohnung (mit genau 1 Nachkommastelle!), Anzahl an Zimmern und die Extras enthalten.
+#define MAX_APARTMENTS 60
+#define MAX_LINE 512
+#define MAX_EXTRAS 10
+#define MAX_EXTRA_LEN 30
+#define MAX_CITY_LEN 50
+#define MAX_ADDRESS_LEN 100
 
-Hier ein beispielhafter Programmaufruf inklusive Ausgabe:
+typedef struct {
+    char city[MAX_CITY_LEN];
+    char address[MAX_ADDRESS_LEN];
+    double area;
+    int rooms;
+    char extras[MAX_EXTRAS][MAX_EXTRA_LEN];
+    int extra_count;
+} Apartment;
 
-Aufruf:
-./apartments Innsbruck 85 3 Garage Balkon.
-Ausgabe:
-Pradl 5: 88.5 m2, 3 Zimmer, Balkon, Garage
-Sillgasse 4: 95.0 m2, 3 Zimmer, Balkon, Garage
-Innrain 15: 90.0 m2, 3 Zimmer, Balkon, Keller, Garage
+int read_apartments(Apartment apartments[], const char *filename) {
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        fprintf(stderr, "Lesefehler\n");
+        return -1;
+    }
 
-Es gilt zu beachten:
-Die Liste der Apartments in der Datei apartments.csv wurde von ChatGPT erstellt, daher können dort aufgeführte Daten von der Realität abweichen.
-Die Reihenfolge der Ausgabe soll der umgekehrten Reihenfolge der Liste in der Datei apartments.csv entsprechen.
-Sollte die Datei apartments.csv plötzlich mehr oder weniger als 51 Datensätze beinhalten, dann darf Ihr Programm nicht abstürzen. Überzählige Zeilen können aber ignoriert werden.
-Ihr Programm sollte auch bei ungültigen Zeilen (z.B. bei fehlenden Daten) nicht abstürzen. Ungültige Zeilen können auch ignoriert werden.
-Wenn die Datei apartments.csv nicht zum Lesen geöffnet werden kann, dann soll eine Fehlermeldung auf stderr ausgegeben, und das Programm mit einem Exit-Code ungleich 0 beendet werden. Wichtig: Die Fehlermeldung muss das Wort "Lesefehler" enthalten.
-Werden keine oder zuwenig Kommandozeilenparameter angegeben, dann soll eine Fehlermeldung auf stderr ausgegeben, und das Programm mit einem Exit-Code ungleich 0 beendet werden. Wichtig: Die Fehlermeldung muss das Wort "Eingabefehler" enthalten.
-Wird eine nicht existierende Stadt angegeben, oder es konnten keine passenden Apartments gefunden werden, dann soll eine Fehlermeldung auf stderr ausgegeben, und das Programm mit einem Exit-Code ungleich 0 beendet werden. Wichtig: Die Fehlermeldung muss das Wort "Parameterfehler" enthalten.
-Hilfestellung für eine mögliche Herangehensweise:
-Hinweis: Sie müssen sich NICHT an diesen Ablauf halten - wichtig ist nur, dass Ihr Programm den oberhalb präsentierten Angaben gerecht wird. Sehen Sie den folgenden Abschnitt lediglich als Hilfestellung an, um die Aufgabe in kleinere Einheiten zerlegen zu können.
-(1) Erstellen Sie zunächst die main()-Funktion, lesen sie die Kommandozeilenparameter ein und überprüfen Sie diese auf ihre Richtigkeit.
+    char line[MAX_LINE];
+    int count = 0;
 
-(2) Erstellen Sie eine Struktur mit passenden Feldern, um die Daten der Apartments speichern zu können.
-(3) Implementieren Sie eine Funktion, welche die Daten der Apartments aus der Datei liest und in der zuvor erstellten Struktur speichert. Erzeugen Sie hierfür ein Array ausreichender Größe für 51 Datensätzen. Sie müssen die Array-Größe nicht dynamisch anpassen.
-(4) Implementieren Sie eine Funktion, welche für die angegebenen Parameter die dazu passenden Apartments ausgibt.
-(5) Führen Sie die in den Schritten 1-4 erstellten Bestandteile zu einem funktionsfähigen Programm zusammen.
-Hinweis:
-Die Datensätze wurden zufällig erstellt. Daher stimmen die Daten nicht mit den Daten von den realen Städten überein.
- */
+    while (fgets(line, MAX_LINE, fp) && count < MAX_APARTMENTS) {
+        Apartment apt;
+        char extras_str[MAX_LINE];
+
+        char *token = strtok(line, ";");
+        if (!token) continue;
+        strncpy(apt.city, token, MAX_CITY_LEN - 1);
+        apt.city[MAX_CITY_LEN - 1] = '\0';
+
+        token = strtok(NULL, ";");
+        if (!token) continue;
+        strncpy(apt.address, token, MAX_ADDRESS_LEN - 1);
+        apt.address[MAX_ADDRESS_LEN - 1] = '\0';
+
+        token = strtok(NULL, ";");
+        if (!token) continue;
+        apt.area = atof(token);
+
+        token = strtok(NULL, ";");
+        if (!token) continue;
+        apt.rooms = atoi(token);
+
+        token = strtok(NULL, ";\n");
+        if (!token) continue;
+        strncpy(extras_str, token, MAX_LINE - 1);
+        extras_str[MAX_LINE - 1] = '\0';
+
+        apt.extra_count = 0;
+        char *extra_token = strtok(extras_str, ":");
+        while (extra_token && apt.extra_count < MAX_EXTRAS) {
+            strncpy(apt.extras[apt.extra_count], extra_token, MAX_EXTRA_LEN - 1);
+            apt.extras[apt.extra_count][MAX_EXTRA_LEN - 1] = '\0';
+            apt.extra_count++;
+            extra_token = strtok(NULL, ":");
+        }
+
+        apartments[count++] = apt;
+    }
+
+    fclose(fp);
+    return count;
+}
+
+int has_all_extras(const Apartment *apt, char *required_extras[], int required_count) {
+    for (int i = 0; i < required_count; i++) {
+        int found = 0;
+        for (int j = 0; j < apt->extra_count; j++) {
+            if (strcmp(apt->extras[j], required_extras[i]) == 0) {
+                found = 1;
+                break;
+            }
+        }
+        if (!found) return 0;
+    }
+    return 1;
+}
+
+void print_matching_apartments(const Apartment apartments[], int count, const char *city,
+                               double min_area, int min_rooms, char *required_extras[], int required_count) {
+    int found = 0;
+
+    for (int i = count - 1; i >= 0; i--) {
+        if (strcmp(apartments[i].city, city) == 0 &&
+            apartments[i].area >= min_area &&
+            apartments[i].rooms >= min_rooms &&
+            has_all_extras(&apartments[i], required_extras, required_count)) {
+
+            printf("%s: %.1f m2, %d Zimmer", apartments[i].address, apartments[i].area, apartments[i].rooms);
+
+            for (int j = 0; j < apartments[i].extra_count; j++) {
+                printf(", %s", apartments[i].extras[j]);
+            }
+            printf("\n");
+
+            found = 1;
+        }
+    }
+
+    if (!found) {
+        fprintf(stderr, "Parameterfehler\n");
+        exit(1);
+    }
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 4) {
+        fprintf(stderr, "Eingabefehler\n");
+        return 1;
+    }
+
+    char *city = argv[1];
+    double min_area = atof(argv[2]);
+    int min_rooms = atoi(argv[3]);
+
+    char **required_extras = &argv[4];
+    int required_count = argc - 4;
+
+    Apartment apartments[MAX_APARTMENTS];
+    int count = read_apartments(apartments, "apartments.csv");
+
+    if (count == -1) {
+        return 1;
+    }
+
+    print_matching_apartments(apartments, count, city, min_area, min_rooms, required_extras, required_count);
+
+    return 0;
+}
